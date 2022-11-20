@@ -1,48 +1,83 @@
-﻿using Core.Application;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
-using Infrastructure.Shared.Interfaces;
+using Core.Application;
 using Core.Domain;
+using Infrastructure.Shared;
+using Infrastructure.Shared.Interfaces;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Tretton37
 {
 
-    internal class Program
+    class Program
     {
-        public static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            try
-            {
-                Task.WaitAll(MainAsync());
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex);
-                throw;
-            }
-        }
+            var builder = GetConfigurationBuilder();
 
-        public static async Task MainAsync()
-        {
-            string baseUrl = @"http://tretton37.com";
-            
-            ITreeTraversalService _treeTraversalService = new TreeTraversalService();
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Build())
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
+
+            Log.Logger.Information("******");
+            Log.Logger.Information("** The application has started **");
+            Log.Logger.Information("******");
+
+            var config = builder.Build();
+            var startDirForFolderCreation = config.GetValue<string>("StartDirForFolderCreation") + @"/TrettonHTMLPages";
+
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureServices((context, services) =>
+                {
+                    // DI Registrations
+                    services.AddTransient<ITreeTraversalService, TreeTraversalService>();
+                    services.AddTransient<IHTTPClientService, HTTPClientService>();
+                    //services.AddTransient<IIOService, IOService>();
+                    services.AddTransient<IIOService>(x => 
+                    {
+                        var logger = x.GetRequiredService<ILogger<IOService>>();
+                        var dataService = new IOService(logger, startDirForFolderCreation);
+                        return dataService;
+                    });
+                })
+                .UseSerilog()
+                .Build();
+
+            var traversalService = host.Services.GetService<ITreeTraversalService>();
+            var ioService = host.Services.GetService<IIOService>();
+
+            var baseUrl = config.GetValue<string>("BaseUrl");
 
             List<TreeNode> treeNodes = new List<TreeNode>();
             List<string> usedUrls = new List<string>();
 
-            await _treeTraversalService.Traverse(treeNodes, baseUrl, baseUrl, usedUrls);
+            await ioService.ClearDirectory();
 
-            //List<string> hyperLinks = await _treeTraversalService.FetchURLForHyperLinks(baseUrl);
+            await traversalService.TraverseAsync(treeNodes, baseUrl, baseUrl, usedUrls);
 
-            //usedUrls.AddRange(hyperLinks);
+            Log.Logger.Information("******");
+            Log.Logger.Information("** The application has Ended **");
+            Log.Logger.Information("******");
 
-            //foreach (string link in hyperLinks)
-            //{
-            //    await c.Traverse(treeNodes, baseUrl, baseUrl + link, usedUrls);
-            //}
+        }
+        static IConfigurationBuilder GetConfigurationBuilder()
+        {
+            var builder = new ConfigurationBuilder();
 
+            builder.SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPENTCORE_ENVIRONMENT") ?? Environments.Production}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
+
+            return builder;
         }
     }
 }
