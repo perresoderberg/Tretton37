@@ -9,17 +9,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentatio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{B4F4DD4A-F740-4F26-9D04-87BAE398CDA0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Shared", "Infrastructure.Shared\Infrastructure.Shared.csproj", "{64C1FB0D-B771-4689-AAC1-82F31FFED3A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure.Shared", "Infrastructure.Shared\Infrastructure.Shared.csproj", "{64C1FB0D-B771-4689-AAC1-82F31FFED3A4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{806769BA-F785-477D-82E4-F7879E483CF0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{37E4F596-3A10-48DC-9882-96EE69072E04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Core\Application\Application.csproj", "{A9E6B6AF-CBEE-4FEB-85E7-0E9B6346B590}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "Core\Application\Application.csproj", "{A9E6B6AF-CBEE-4FEB-85E7-0E9B6346B590}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Core\Domain\Domain.csproj", "{7EFD041F-A45B-48C0-A7C9-E37392172050}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Core\Domain\Domain.csproj", "{7EFD041F-A45B-48C0-A7C9-E37392172050}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tretton37.Tests", "Tests\Tretton37.Tests\Tretton37.Tests.csproj", "{455059D1-FC39-41DC-9197-6DEA941A887C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tretton37.Tests", "Tests\Tretton37.Tests\Tretton37.Tests.csproj", "{455059D1-FC39-41DC-9197-6DEA941A887C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
