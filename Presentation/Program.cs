@@ -56,8 +56,8 @@ namespace Tretton37
 
             var baseUrl = config.GetValue<string>("BaseUrl");
 
-            List<TreeNode> treeNodes = new List<TreeNode>();
-            List<string> usedUrls = new List<string>();
+            var treeNodes = new List<TreeNode>();
+            var usedUrls = new List<string>();
 
             await ioService.ClearDirectory();
 

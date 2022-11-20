@@ -28,15 +28,18 @@ namespace Core.Application
             _httpClientService = httpClientService;
             _logger = logger;
         }
-
+        /// <summary>
+        /// Designed to be traversed recursively. Traverse a web page to retreive links and from them traverse futher.
+        /// </summary>
+        /// <param name="treeNodes"></param>
+        /// <param name="baseUrl"></param>
+        /// <param name="currentUrl"></param>
+        /// <param name="usedUrls"></param>
+        /// <returns></returns>
         public async Task TraverseAsync(List<TreeNode> treeNodes, string baseUrl, string currentUrl, List<string> usedUrls)
         {
             try
             {
-                if (currentUrl.Contains("meet"))
-                    return;
-
-
                 _logger.LogInformation($"{Thread.CurrentThread.ManagedThreadId}  Enter Traverse with Url {currentUrl}");
 
                 if (string.IsNullOrEmpty(currentUrl))
@@ -45,13 +48,13 @@ namespace Core.Application
                 int level = currentUrl.Count(x => x == '/' || x == '#');
                 treeNodes.Add(new TreeNode() { Level = level, Url = currentUrl });
 
-                string html = await _httpClientService.GetHtmlPageAsync(currentUrl);
+                var html = await _httpClientService.GetHtmlPageAsync(currentUrl);
 
                 await _ioService.StoreHtmlPageInFilePathAsync(currentUrl.Replace(baseUrl, ""), html);
 
                 numbersOfEntries++;
 
-                List<string> hyperlinks = (await _httpClientService.FetchURLForHyperLinksAsync(currentUrl)).ToList();
+                var hyperlinks = (await _httpClientService.FetchURLForHyperLinksAsync(currentUrl)).ToList();
 
                 if (hyperlinks.Count == 0)
                     return;
@@ -61,7 +64,7 @@ namespace Core.Application
                 if (hyperlinks.Count == 0)
                     return;
 
-                //_logger.LogInformation("  all found hyperlinks - " + String.Join(',', hyperlinks)); ;
+                _logger.LogTrace("  all found hyperlinks - " + String.Join(',', hyperlinks)); ;
 
                 var tasks = new List<Task>();
 
@@ -82,9 +85,12 @@ namespace Core.Application
                     }
                 }
 
+
+                //** An other approach to handle threads **//
+
                 //Parallel.ForEach (hyperlinks, link =>
                 //{
-                //    string newlink = currentUrl + link;
+                //    var newlink = currentUrl + link;
                 //    if (link.StartsWith("/"))
                 //    {
                 //        newlink = baseUrl + link;
@@ -105,6 +111,7 @@ namespace Core.Application
             }
             catch (Exception ex)
             {
+                _logger.LogError("Exception in TraverseAsync");
                 Debugger.Break();
                 throw;
             }

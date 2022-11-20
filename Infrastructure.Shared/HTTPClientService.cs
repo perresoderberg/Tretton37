@@ -22,7 +22,11 @@ namespace Infrastructure.Shared
         {
             _logger = logger;
         }
-
+        /// <summary>
+        /// Opens a html page to retreive hyperlinks
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<string>> FetchURLForHyperLinksAsync(string url)
         {
 
@@ -35,11 +39,11 @@ namespace Infrastructure.Shared
                 List<string> urlList = null;
                 lock (_lock)
                 {
-                    HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+                    var request = WebRequest.Create(url) as HttpWebRequest;
 
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                    var response = (HttpWebResponse)request.GetResponse();
 
-                    WebHeaderCollection header = response.Headers;
+                    var header = response.Headers;
 
                     string responseStr = null;
                     using (var reader = new StreamReader(response.GetResponseStream(), ASCIIEncoding.ASCII))
@@ -66,7 +70,12 @@ namespace Infrastructure.Shared
                 throw;
             }
         }
-
+        /// <summary>
+        /// Get links from a html page
+        /// </summary>
+        /// <param name="html">HTML sent in as a string</param>
+        /// <returns>A list of links</returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public List<string> RetreiveHyperLinksFromHtml(string html)
         {
             if (string.IsNullOrWhiteSpace(html))
@@ -76,11 +85,15 @@ namespace Infrastructure.Shared
             var urlMatches = linkParser.Matches(html).OfType<Match>().Select(m => m.Groups["href"].Value);
             return urlMatches.Where(x => x.Length > 1 && !x.Contains(".") && (x.StartsWith("/") || x.StartsWith("#")) && Regex.IsMatch(x, "^.[A-Za-z]")).Distinct().ToList();
         }
-
+        /// <summary>
+        /// Retreives the content of a html page
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         public async Task<string> GetHtmlPageAsync(string url) 
         {
 
-            string htmlPage = "";
+            var htmlPage = "";
             
             HttpWebResponse response = null;
             StreamReader reader = null;
@@ -89,11 +102,11 @@ namespace Infrastructure.Shared
             {
                 lock (_lock)
                 {
-                    HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+                    var request = WebRequest.Create(url) as HttpWebRequest;
 
                     response = (HttpWebResponse)request.GetResponse();
 
-                    WebHeaderCollection header = response.Headers;
+                    var header = response.Headers;
 
                     var encoding = ASCIIEncoding.ASCII;
                     using (reader = new System.IO.StreamReader(response.GetResponseStream(), encoding))

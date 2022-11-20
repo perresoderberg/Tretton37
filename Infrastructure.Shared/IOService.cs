@@ -32,7 +32,12 @@ namespace Infrastructure.Shared
             }
 
         }
-
+        /// <summary>
+        /// Convert the url to a filepath in which to store the html page
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="htmlPage"></param>
+        /// <returns></returns>
         public async Task StoreHtmlPageInFilePathAsync(string url, string htmlPage)
         {
             StreamWriter writer = null;
@@ -43,7 +48,7 @@ namespace Infrastructure.Shared
                     return;
 
                 // url = url.Replace("#", "/");
-                string newPath = startDirForFolderCreation + url.Replace("#", "/");
+                var newPath = startDirForFolderCreation + url.Replace("#", "/");
 
                 if (!Directory.Exists(newPath))
                     Directory.CreateDirectory(newPath);
@@ -84,7 +89,11 @@ namespace Infrastructure.Shared
         }
 
 
-
+        /// <summary>
+        /// Use last part of path to be used as filename
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         private string GetFileName(string path)
         {
             var pathSplit = path.Split(new[] { '#', '/' });
