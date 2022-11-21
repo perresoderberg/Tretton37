@@ -1,9 +1,8 @@
-﻿using Core.Domain;
-using Infrastructure.Shared;
+﻿using Application;
+using Core.Domain;
 using Infrastructure.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -54,7 +53,7 @@ namespace Core.Application
 
                 numbersOfEntries++;
 
-                var hyperlinks = (await _httpClientService.FetchURLForHyperLinksAsync(currentUrl)).ToList();
+                var hyperlinks = _httpClientService.RetreiveHyperLinksFromHtml(html);
 
                 if (hyperlinks.Count == 0)
                     return;
@@ -68,40 +67,39 @@ namespace Core.Application
 
                 var tasks = new List<Task>();
 
-                foreach (var link in hyperlinks)
-                {
-                    string newLink = currentUrl + link;
-                    if (link.StartsWith("/"))
-                    {
-                        newLink = baseUrl + link;
-                    }
-                    if (!usedUrls.Contains(link))
-                    {
-                        usedUrls.Add(link);
-
-                        var t = TraverseAsync(treeNodes, baseUrl, newLink, usedUrls);
-
-                        tasks.Add(t);
-                    }
-                }
-
-
-                //** An other approach to handle threads **//
-
-                //Parallel.ForEach (hyperlinks, link =>
+                //foreach (var link in hyperlinks)
                 //{
-                //    var newlink = currentUrl + link;
+                //    string newLink = currentUrl + link;
                 //    if (link.StartsWith("/"))
                 //    {
-                //        newlink = baseUrl + link;
+                //        newLink = baseUrl + link;
                 //    }
                 //    if (!usedUrls.Contains(link))
                 //    {
                 //        usedUrls.Add(link);
-                //        var t = TraverseAsync(treeNodes, baseUrl, newlink, usedUrls);
+
+                //        var t = TraverseAsync(treeNodes, baseUrl, newLink, usedUrls);
+
                 //        tasks.Add(t);
                 //    }
-                //});
+                //}
+
+                //** An other approach to handle threads **//
+
+                Parallel.ForEach(hyperlinks, link =>
+                {
+                    var newlink = currentUrl + link;
+                    if (link.StartsWith("/"))
+                    {
+                        newlink = baseUrl + link;
+                    }
+                    if (!usedUrls.Contains(link))
+                    {
+                        usedUrls.Add(link);
+                        var t = TraverseAsync(treeNodes, baseUrl, newlink, usedUrls);
+                        tasks.Add(t);
+                    }
+                });
 
                 await Task.WhenAll(tasks);
                 numbersAwaitedThreads += tasks.Count;

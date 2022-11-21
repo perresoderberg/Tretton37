@@ -1,13 +1,8 @@
-﻿using Core.Domain;
-using Infrastructure.Shared.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Infrastructure.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Shared

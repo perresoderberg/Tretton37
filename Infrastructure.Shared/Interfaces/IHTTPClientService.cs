@@ -8,7 +8,6 @@ namespace Infrastructure.Shared.Interfaces
 {
     public interface IHTTPClientService
     {
-        Task<IEnumerable<string>> FetchURLForHyperLinksAsync(string url);
         Task<string> GetHtmlPageAsync(string currentUrl);
         List<string> RetreiveHyperLinksFromHtml(string html);
     }

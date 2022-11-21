@@ -15,61 +15,14 @@ namespace Infrastructure.Shared
 {
     public class HTTPClientService : IHTTPClientService
     {
-        private static object _lock = new object();
+        private readonly static object _lock = new object();
 
         private readonly ILogger<HTTPClientService> _logger;
         public HTTPClientService(ILogger<HTTPClientService> logger)
         {
             _logger = logger;
         }
-        /// <summary>
-        /// Opens a html page to retreive hyperlinks
-        /// </summary>
-        /// <param name="url"></param>
-        /// <returns></returns>
-        public async Task<IEnumerable<string>> FetchURLForHyperLinksAsync(string url)
-        {
 
-            try
-            {
-                _logger.LogTrace($"Fetch from URL: {url}");
-
-                Thread.Sleep(5);
-
-                List<string> urlList = null;
-                lock (_lock)
-                {
-                    var request = WebRequest.Create(url) as HttpWebRequest;
-
-                    var response = (HttpWebResponse)request.GetResponse();
-
-                    var header = response.Headers;
-
-                    string responseStr = null;
-                    using (var reader = new StreamReader(response.GetResponseStream(), ASCIIEncoding.ASCII))
-                    {
-                        responseStr = reader.ReadToEnd();
-                    }
-
-                    urlList = RetreiveHyperLinksFromHtml(responseStr);
-                }
-                _logger.LogTrace("Found URLs: " + string.Join(',', urlList));
-
-                return urlList;
-            }
-            catch (WebException ex)
-            {
-                _logger.LogError("Exception in FetchURLForHyperLinksAsync");
-                Debugger.Break();
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Exception in FetchURLForHyperLinksAsync");
-                Debugger.Break();
-                throw;
-            }
-        }
         /// <summary>
         /// Get links from a html page
         /// </summary>
@@ -102,6 +55,8 @@ namespace Infrastructure.Shared
             {
                 lock (_lock)
                 {
+                    //Task.Delay(5);
+
                     var request = WebRequest.Create(url) as HttpWebRequest;
 
                     response = (HttpWebResponse)request.GetResponse();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Application;
 using Core.Application;
 using Core.Domain;
 using Infrastructure.Shared;
@@ -61,7 +62,10 @@ namespace Tretton37
 
             await ioService.ClearDirectory();
 
-            await traversalService.TraverseAsync(treeNodes, baseUrl, baseUrl, usedUrls);
+            await Task.Run( async () =>
+            {
+                await traversalService.TraverseAsync(treeNodes, baseUrl, baseUrl, usedUrls);
+            });
 
             Log.Logger.Information("******");
             Log.Logger.Information("** The application has Ended **");
