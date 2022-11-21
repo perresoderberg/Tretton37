@@ -41,7 +41,6 @@ namespace Tretton37
                     // DI Registrations
                     services.AddTransient<ITreeTraversalService, TreeTraversalService>();
                     services.AddTransient<IHTTPClientService, HTTPClientService>();
-                    //services.AddTransient<IIOService, IOService>();
                     services.AddTransient<IIOService>(x => 
                     {
                         var logger = x.GetRequiredService<ILogger<IOService>>();
@@ -57,19 +56,23 @@ namespace Tretton37
 
             var baseUrl = config.GetValue<string>("BaseUrl");
 
-            var treeNodes = new List<TreeNode>();
             var usedUrls = new List<string>();
+            var treeNode = new TreeNode(baseUrl, baseUrl, usedUrls);
 
             await ioService.ClearDirectory();
 
             await Task.Run( async () =>
             {
-                await traversalService.TraverseAsync(treeNodes, baseUrl, baseUrl, usedUrls);
+                await traversalService.TraverseAsync(treeNode);
             });
+            
 
             Log.Logger.Information("******");
+            Log.Logger.Information($"*** Number of nodes that has been processed: {traversalService.GetNodes().Count} ***");
+            Log.Logger.Information("");
             Log.Logger.Information("** The application has Ended **");
             Log.Logger.Information("******");
+
 
         }
         static IConfigurationBuilder GetConfigurationBuilder()

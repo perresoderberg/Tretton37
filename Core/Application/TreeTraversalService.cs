@@ -15,7 +15,7 @@ namespace Core.Application
     {
         public static volatile int numbersOfEntries = 0;
         public static volatile int numbersAwaitedThreads = 0;
-
+        List<TreeNode> nodes = null;
         IIOService _ioService;
         IHTTPClientService _httpClientService;
 
@@ -26,6 +26,12 @@ namespace Core.Application
             _ioService = ioService;
             _httpClientService = httpClientService;
             _logger = logger;
+            nodes = new List<TreeNode>();
+        }
+
+        public List<TreeNode> GetNodes()
+        {
+            return nodes;
         }
         /// <summary>
         /// Designed to be traversed recursively. Traverse a web page to retreive links and from them traverse futher.
@@ -35,21 +41,20 @@ namespace Core.Application
         /// <param name="currentUrl"></param>
         /// <param name="usedUrls"></param>
         /// <returns></returns>
-        public async Task TraverseAsync(List<TreeNode> treeNodes, string baseUrl, string currentUrl, List<string> usedUrls)
+        public async Task TraverseAsync(TreeNode treeNode)
         {
             try
             {
-                _logger.LogInformation($"{Thread.CurrentThread.ManagedThreadId}  Enter Traverse with Url {currentUrl}");
+                _logger.LogInformation($"{Thread.CurrentThread.ManagedThreadId}  Enter Traverse with Url {treeNode.CurrentUrl}");
 
-                if (string.IsNullOrEmpty(currentUrl))
+                if (string.IsNullOrEmpty(treeNode.CurrentUrl))
                     return;
 
-                int level = currentUrl.Count(x => x == '/' || x == '#');
-                treeNodes.Add(new TreeNode() { Level = level, Url = currentUrl });
+                treeNode.Level = treeNode.CurrentUrl.Count(x => x == '/' || x == '#');
 
-                var html = await _httpClientService.GetHtmlPageAsync(currentUrl);
+                var html = await _httpClientService.GetHtmlPageAsync(treeNode.CurrentUrl);
 
-                await _ioService.StoreHtmlPageInFilePathAsync(currentUrl.Replace(baseUrl, ""), html);
+                await _ioService.StoreHtmlPageInFilePathAsync(treeNode.CurrentUrl.Replace(treeNode.BaseUrl, ""), html);
 
                 numbersOfEntries++;
 
@@ -58,7 +63,7 @@ namespace Core.Application
                 if (hyperlinks.Count == 0)
                     return;
 
-                hyperlinks.RemoveAll(x => usedUrls.Contains(x));
+                hyperlinks.RemoveAll(x => treeNode.UsedUrls.Contains(x));
 
                 if (hyperlinks.Count == 0)
                     return;
@@ -88,15 +93,17 @@ namespace Core.Application
 
                 Parallel.ForEach(hyperlinks, link =>
                 {
-                    var newlink = currentUrl + link;
+                    var newlink = treeNode.CurrentUrl + link;
                     if (link.StartsWith("/"))
                     {
-                        newlink = baseUrl + link;
+                        newlink = treeNode.BaseUrl + link;
                     }
-                    if (!usedUrls.Contains(link))
+                    if (!treeNode.UsedUrls.Contains(link))
                     {
-                        usedUrls.Add(link);
-                        var t = TraverseAsync(treeNodes, baseUrl, newlink, usedUrls);
+                        treeNode.UsedUrls.Add(link);
+                        treeNode.CurrentUrl = newlink;
+                        nodes.Add(treeNode);
+                        var t = TraverseAsync(nodes.Last());
                         tasks.Add(t);
                     }
                 });
